@@ -4,165 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>워크북(기적수업)</title>
-    <!-- html2canvas 라이브러리 -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <!-- Supabase JS 라이브러리 추가 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-canvas: #f8f9fa;
-            --page-bg: #ffffff;
-            --text-color: #2c3e50;
-            --accent-color: #27ae60; 
-            --font-size: 18px;
-            --bracket-color: #2980b9; 
+            --bg-canvas: #f8f9fa; --page-bg: #ffffff; --text-color: #2c3e50;
+            --accent-color: #27ae60; --font-size: 18px; --bracket-color: #2980b9; 
         }
-
         body {
             margin: 0; padding: 0; background: var(--bg-canvas);
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
             color: var(--text-color); display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
-
         .top-nav {
             width: 100%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex; flex-direction: column; padding: 12px 20px;
             box-sizing: border-box; position: fixed; top: 0; z-index: 1000; gap: 10px;
         }
-
         #book-title-input { border: none; font-size: 18px; font-weight: bold; outline: none; width: 100%; background: transparent; border-bottom: 1px solid #f1f3f5; padding-bottom: 4px; }
         #book-title-input:read-only { color: #7f8c8d; cursor: default; border-bottom-color: transparent; }
 
         .content-area {
-            width: 100%; max-width: 800px; margin-top: 110px; 
-            margin-bottom: 95px; /* 버튼이 위로 올라온 만큼 하단 여백을 70px -> 95px로 늘렸습니다 */
+            width: 100%; max-width: 800px; margin: 110px 0 95px;
             background: var(--page-bg); min-height: calc(100vh - 180px);
             box-shadow: 0 0 20px rgba(0,0,0,0.05); padding: 40px 30px; box-sizing: border-box;
         }
-
-        .render-box { 
-            line-height: 1.8; 
-            word-wrap: break-word; 
-            word-break: break-all; 
-            white-space: pre-wrap;
-            text-align: left;
-            outline: none;
-        }
+        .render-box { line-height: 1.8; word-break: break-all; white-space: pre-wrap; text-align: left; outline: none; }
         
-        /* ### 대제목 */
-        .header-big { 
-            display: block; font-size: 1.4em; font-weight: 900; 
-            margin-top: 1em; margin-bottom: 0.5em; color: #111; line-height: 1.2;
-        }
-
-        /* ## 중제목 (초록색 바) */
-        .header-mid { 
-            display: block; font-size: 1.25em; font-weight: 800; 
-            margin-top: 1.2em; margin-bottom: 0.6em; color: #1a252f; 
-            border-left: 5px solid var(--accent-color); padding-left: 12px; line-height: 1.4; 
-        }
-
-        /* # 소제목 */
-        .header-small { 
-            display: block; font-size: 1.1em; font-weight: 800; 
-            margin-top: 1em; margin-bottom: 0.4em; color: #34495e; line-height: 1.4;
-        }
-
+        .header-big { display: block; font-size: 1.4em; font-weight: 900; margin: 1em 0 0.5em; color: #111; line-height: 1.2; }
+        .header-mid { display: block; font-size: 1.25em; font-weight: 800; margin: 1.2em 0 0.6em; color: #1a252f; border-left: 5px solid var(--accent-color); padding-left: 12px; line-height: 1.4; }
+        .header-small { display: block; font-size: 1.1em; font-weight: 800; margin: 1em 0 0.4em; color: #34495e; line-height: 1.4; }
         .bullet-line { display: block; padding-left: 5px; margin-bottom: 0.4em; }
         .quote-line { display: block; color: #7f8c8d; font-style: italic; border-left: 3px solid #ecf0f1; padding-left: 15px; margin: 0.5em 0; }
-        
         .bold-text { font-weight: 800; color: #1a252f; } 
         .bracket-highlight { color: var(--bracket-color); font-weight: 600; }
-        
         .quote-highlight { color: var(--accent-color); font-weight: 800; font-style: italic; }
 
-        /* 하단 버튼 바 커스텀: 공중에 띄우고 둥글게 변경 */
         .bottom-nav {
-            position: fixed; 
-            bottom: 16px; /* 바닥에서 16px 띄움 */
-            left: 50%;
-            transform: translateX(-50%); /* 화면 중앙 정렬 */
-            width: calc(100% - 32px); /* 좌우 여백 확보 */
-            max-width: 740px; /* 본문 영역 안으로 예쁘게 들어오도록 제한 */
-            height: 55px; 
-            background: #2c3e50;
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            z-index: 1000;
-            border-radius: 16px; /* 모서리를 둥글게 */
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); /* 뜬 느낌을 주는 부드러운 그림자 */
-            overflow: hidden; /* 버튼 hover 시 둥근 모서리가 깨지지 않도록 방지 */
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 32px); max-width: 740px; height: 55px; 
+            background: #2c3e50; display: flex; z-index: 1000;
+            border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); overflow: hidden;
         }
-        
-        .nav-btn { 
-            background: none; border: none; color: white; font-size: 14px; font-weight: 500;
-            cursor: pointer; flex: 1; height: 100%; display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s;
-        }
+        .nav-btn { background: none; border: none; color: white; font-size: 14px; font-weight: 500; cursor: pointer; flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
         .nav-btn:hover { background: #34495e; }
+        .nav-btn:not(:last-child) { border-right: 1px solid rgba(255, 255, 255, 0.15); }
 
-        .nav-btn:not(:last-child) {
-            border-right: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .mode-switch-container {
-            display: flex; background: #edf2f7; padding: 4px; border-radius: 20px; gap: 2px; align-items: center;
-        }
-        .mode-toggle-btn {
-            padding: 6px 14px; border-radius: 16px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease; background: transparent; color: #718096;
-        }
+        .mode-switch-container { display: flex; background: #edf2f7; padding: 4px; border-radius: 20px; gap: 2px; }
+        .mode-toggle-btn { padding: 6px 14px; border-radius: 16px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; background: transparent; color: #718096; }
 
         .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 860px; background: white; border-radius: 20px; padding: 25px; display: none; z-index: 2000; box-shadow: 0 20px 50px rgba(0,0,0,0.3); box-sizing: border-box; }
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); display: none; z-index: 1500; }
-        
-        #share-modal { width: 95%; max-width: 860px; }
-
         .image-card-container { display: flex; flex-direction: column; gap: 20px; max-height: 50vh; overflow: auto; margin: 15px 0; padding: 15px; background: #eee; border-radius: 12px; }
-        
-        #hidden-capture-zone {
-            position: absolute; left: -9999px; top: -9999px; width: 810px;
-        }
-
-        .share-card {
-            background: #ffffff; padding: 45px 35px; width: 810px; height: auto; 
-            box-sizing: border-box; color: #2c3e50; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+        #hidden-capture-zone { position: absolute; left: -9999px; top: -9999px; width: 810px; }
+        .share-card { background: #ffffff; padding: 45px 35px; width: 810px; box-sizing: border-box; color: #2c3e50; }
         .card-header { font-size: 16px; font-weight: bold; border-bottom: 2.5px solid var(--accent-color); padding-bottom: 12px; margin-bottom: 25px; color: #34495e; }
         .card-footer { margin-top: 40px; font-size: 12px; color: #bdc3c7; text-align: center; border-top: 1px solid #f1f1f1; padding-top: 15px; }
-
-        .preview-img { width: 100%; height: auto; display: block; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-
+        .preview-img { width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         .save-toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: white; padding: 10px 25px; border-radius: 30px; display: none; z-index: 3000; }
         
-        .book-item { 
-            padding: 15px; 
-            border-bottom: 1px solid #eee; 
-            cursor: pointer; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
+        .book-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .book-item:hover { background: #f8f9fa; }
-        .book-item-title { flex: 1; margin-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        .delete-btn { 
-            background: none; 
-            border: none; 
-            cursor: pointer; 
-            padding: 5px 8px; 
-            border-radius: 5px; 
-            font-size: 14px;
-            transition: background 0.2s;
-        }
+        .book-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .delete-btn { background: none; border: none; cursor: pointer; padding: 5px 8px; border-radius: 5px; font-size: 14px; }
         .delete-btn:hover { background: #fee; }
     </style>
 </head>
 <body>
 
     <div class="top-nav">
-        <div style="display: flex; align-items: center; width: 100%;">
-            <div class="mode-switch-container">
+        <div>
+            <div class="mode-switch-container" style="display:inline-flex;">
                 <button onclick="setMode(false)" id="read-mode-btn" class="mode-toggle-btn">👁️ 읽기</button>
                 <button onclick="setMode(true)" id="edit-mode-btn" class="mode-toggle-btn">✎ 편집</button>
             </div>
@@ -184,12 +96,11 @@
     </div>
 
     <div id="hidden-capture-zone"></div>
-
     <div class="modal-overlay" id="overlay" onclick="closeModals()"></div>
     
     <div class="modal" id="share-modal">
-        <h3 style="margin-top:0; text-align: center;">🚀 이미지 카드 생성 완료</h3>
-        <p style="font-size: 13px; color: #7f8c8d; text-align: center; margin-top: -5px;">모바일 전송 기능이 안 될 경우, 이미지를 길게 눌러 직접 저장/공유해 주세요.</p>
+        <h3 style="margin:0; text-align: center;">🚀 이미지 카드 생성 완료</h3>
+        <p style="font-size: 13px; color: #7f8c8d; text-align: center; margin-top: 5px;">이미지를 길게 눌러 직접 저장/공유도 가능합니다.</p>
         <div class="image-card-container" id="share-cards-list"></div>
         <button id="share-api-btn" onclick="shareCapturedFiles()" style="width:100%; padding:16px; border:none; border-radius:12px; background:#fee500; color:#3c1e1e; cursor:pointer; font-weight:bold; font-size:16px;">💬 이미지 카드 전송 (OS 공유)</button>
         <button onclick="closeModals()" style="width:100%; margin-top:10px; padding:10px; border:none; background:none; color:#999; cursor:pointer;">취소</button>
@@ -204,342 +115,170 @@
     <div class="save-toast" id="save-toast">✅ 저장 완료</div>
 
     <script>
-        // --- Supabase 설정 시작 ---
         const SUPABASE_URL = 'https://ocghxynajjbkpbyljxzg.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZ2h4eW5hampia3BieWxqeHpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTg4MTksImV4cCI6MjA5MTI3NDgxOX0.weaiOCV0UMjsfSmEI_WU_0L4qJUOGRrtoWEwPKN26is';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        // --- Supabase 설정 끝 ---
 
-        let currentBookId = null, isEditMode = false, fontSize = 18, rawContent = "";
-        let globalGeneratedFiles = [];
+        let currentBookId = null, isEditMode = false, fontSize = 18, rawContent = "", globalGeneratedFiles = [];
+        const $ = id => document.getElementById(id);
 
         async function init() {
             const savedFontSize = localStorage.getItem('eb_font_size');
-            if (savedFontSize) {
-                fontSize = parseInt(savedFontSize, 10);
-                document.getElementById('editor-surface').style.fontSize = fontSize + 'px';
-            }
+            if (savedFontSize) $('editor-surface').style.fontSize = (fontSize = parseInt(savedFontSize, 10)) + 'px';
 
-            // 가장 최근에 업데이트된 책 데이터를 Supabase에서 가져와 시작 페이지로 설정
             try {
-                const { data, error } = await supabaseClient
-                    .from('acim_workbook')
-                    .select('*')
-                    .order('updated_at', { ascending: false })
-                    .limit(1);
-
-                if (data && data.length > 0) {
-                    loadBookData(data[0]);
-                } else {
-                    createNewBook();
-                }
-            } catch (err) {
-                console.error(err);
-                createNewBook();
-            }
+                const { data } = await supabaseClient.from('acim_workbook').select('*').order('updated_at', { ascending: false }).limit(1);
+                data && data.length > 0 ? loadBookData(data[0]) : createNewBook();
+            } catch (err) { createNewBook(); }
         }
 
         function parseMarkdown(text) {
             if (!text) return "";
             return text.split('\n').map(line => {
                 let p = line.replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>')
-                            .replace(/\((.*?)\)/g, '<span class="bracket-highlight">($1)</span>');
-                
-                p = p.replace(/“(.*?)”/g, '“<span class="quote-highlight">$1</span>”');
-                
-                const trimmed = p.trim();
-                if (trimmed.startsWith('###')) {
-                    return `<span class="header-big">${p.replace(/^###\s*/, '')}</span>`;
-                } else if (trimmed.startsWith('##')) {
-                    return `<span class="header-mid">${p.replace(/^##\s*/, '')}</span>`;
-                } else if (trimmed.startsWith('#')) {
-                    return `<span class="header-small">${p.replace(/^#\s*/, '')}</span>`;
-                }
-                
-                if (trimmed.startsWith('*')) return `<span class="bullet-line">• ${p.replace(/^\s*\*\s*/, '')}</span>`;
-                if (trimmed.startsWith('>')) return `<span class="quote-line">${p.replace(/^>\s*/, '')}</span>`;
-                
-                return p === "" ? "<div><br></div>" : `<div>${p}</div>`;
+                            .replace(/\((.*?)\)/g, '<span class="bracket-highlight">($1)</span>')
+                            .replace(/“(.*?)”/g, '“<span class="quote-highlight">$1</span>”');
+                const t = p.trim();
+                if (t.startsWith('###')) return `<span class="header-big">${p.replace(/^###\s*/, '')}</span>`;
+                if (t.startsWith('##')) return `<span class="header-mid">${p.replace(/^##\s*/, '')}</span>`;
+                if (t.startsWith('#')) return `<span class="header-small">${p.replace(/^#\s*/, '')}</span>`;
+                if (t.startsWith('*')) return `<span class="bullet-line">• ${p.replace(/^\s*\*\s*/, '')}</span>`;
+                if (t.startsWith('>')) return `<span class="quote-line">${p.replace(/^>\s*/, '')}</span>`;
+                return t === "" ? "<div><br></div>" : `<div>${p}</div>`;
             }).join('');
         }
 
         function renderContent() {
-            const surface = document.getElementById('editor-surface');
-            if (!isEditMode) {
-                surface.innerHTML = parseMarkdown(rawContent);
-            } else {
-                surface.innerText = rawContent;
-            }
+            $('editor-surface').innerHTML = isEditMode ? rawContent : parseMarkdown(rawContent);
+            if(isEditMode) $('editor-surface').innerText = rawContent;
         }
 
         function setMode(editMode) {
-            const surface = document.getElementById('editor-surface');
-            const readBtn = document.getElementById('read-mode-btn');
-            const editBtn = document.getElementById('edit-mode-btn');
-            const titleInput = document.getElementById('book-title-input');
-
-            if (isEditMode && !editMode) {
-                rawContent = surface.innerText;
-            }
-
+            if (isEditMode && !editMode) rawContent = $('editor-surface').innerText;
             isEditMode = editMode;
 
-            if (isEditMode) {
-                surface.contentEditable = true;
-                surface.innerText = rawContent;
-                surface.focus();
+            const surface = $('editor-surface');
+            surface.contentEditable = isEditMode;
+            renderContent();
+            if(isEditMode) surface.focus();
 
-                titleInput.readOnly = false;
-
-                editBtn.style.background = "#f1c40f";
-                editBtn.style.color = "#2c3e50";
-                editBtn.style.fontWeight = "bold";
-
-                readBtn.style.background = "transparent";
-                readBtn.style.color = "#718096";
-                readBtn.style.fontWeight = "normal";
-            } else {
-                surface.contentEditable = false;
-                renderContent();
-
-                titleInput.readOnly = true;
-
-                readBtn.style.background = "var(--accent-color)";
-                readBtn.style.color = "#ffffff";
-                readBtn.style.fontWeight = "bold";
-
-                editBtn.style.background = "transparent";
-                editBtn.style.color = "#718096";
-                editBtn.style.fontWeight = "normal";
-            }
+            $('book-title-input').readOnly = !isEditMode;
+            $('edit-mode-btn').style.cssText = isEditMode ? "background:#f1c40f; color:#2c3e50; font-weight:bold;" : "background:transparent; color:#718096;";
+            $('read-mode-btn').style.cssText = !isEditMode ? "background:var(--accent-color); color:#fff; font-weight:bold;" : "background:transparent; color:#718096;";
         }
 
         async function generateShareImages() {
-            if (isEditMode) rawContent = document.getElementById('editor-surface').innerText;
+            if (isEditMode) rawContent = $('editor-surface').innerText;
             if (!rawContent.trim()) return alert("공유할 내용이 없습니다.");
 
-            const title = document.getElementById('book-title-input').value || '나의 기록';
-            const listContainer = document.getElementById('share-cards-list');
-            const hiddenZone = document.getElementById('hidden-capture-zone');
+            const title = $('book-title-input').value || '나의 기록';
+            const list = $('share-cards-list');
+            const zone = $('hidden-capture-zone');
             
-            listContainer.innerHTML = "<div style='text-align:center; padding:20px; width:100%; color:#666;'>⏳ 고화질 카드 이미지 생성 중...</div>";
-            hiddenZone.innerHTML = "";
-            globalGeneratedFiles = [];
+            list.innerHTML = "<div style='text-align:center; padding:20px; width:100%; color:#666;'>⏳ 카드 이미지 생성 중...</div>";
+            zone.innerHTML = ""; globalGeneratedFiles = [];
+            $('share-modal').style.display = $('overlay').style.display = 'block';
 
-            document.getElementById('share-modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-
-            const allLines = rawContent.split('\n');
-            const totalLines = allLines.length;
-            const size = Math.ceil(totalLines / 3);
-            
-            const chunks = [
-                allLines.slice(0, size),
-                allLines.slice(size, size * 2),
-                allLines.slice(size * 2)
-            ];
+            const lines = rawContent.split('\n');
+            const size = Math.ceil(lines.length / 3);
 
             try {
-                chunks.forEach((chunk, idx) => {
-                    if (chunk.length === 0 || (chunk.length === 1 && chunk[0] === "")) return;
-                    const styledHTML = parseMarkdown(chunk.join('\n'));
-                    
-                    const cardWrapper = document.createElement('div');
-                    cardWrapper.className = 'share-card';
-                    cardWrapper.id = `capture-card-${idx}`;
-                    cardWrapper.innerHTML = `
-                        <div class="card-header">${title} (${idx+1}/3)</div>
-                        <div class="render-box" style="font-size: 18px;">${styledHTML}</div>
-                        <div class="card-footer">워크북(기적수업)</div>
-                    `;
-                    hiddenZone.appendChild(cardWrapper);
-                });
+                for(let i=0; i<3; i++) {
+                    const chunk = lines.slice(i*size, (i+1)*size);
+                    if (!chunk.length || (chunk.length === 1 && chunk[0] === "")) continue;
 
-                listContainer.innerHTML = ""; 
-                const cards = hiddenZone.querySelectorAll('.share-card');
+                    const card = document.createElement('div');
+                    card.className = 'share-card';
+                    card.innerHTML = `<div class="card-header">${title} (${i+1}/3)</div><div class="render-box" style="font-size:18px;">${parseMarkdown(chunk.join('\n'))}</div><div class="card-footer">워크북(기적수업)</div>`;
+                    zone.appendChild(card);
 
-                for (let card of cards) {
-                    const canvas = await html2canvas(card, { 
-                        scale: 2,
-                        backgroundColor: "#ffffff",
-                        useCORS: true,
-                        height: card.scrollHeight,
-                        windowHeight: card.scrollHeight
-                    });
-                    
+                    const canvas = await html2canvas(card, { scale: 2, backgroundColor: "#fff", useCORS: true, height: card.scrollHeight });
                     const dataUrl = canvas.toDataURL('image/png');
-                    const imgTag = document.createElement('img');
-                    imgTag.src = dataUrl;
-                    imgTag.className = 'preview-img';
-                    listContainer.appendChild(imgTag);
+                    
+                    const img = document.createElement('img');
+                    img.src = dataUrl; img.className = 'preview-img';
+                    list.appendChild(img);
 
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                    globalGeneratedFiles.push(new File([blob], `${card.id}.png`, { type: 'image/png' }));
+                    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                    globalGeneratedFiles.push(new File([blob], `card-${i}.png`, { type: 'image/png' }));
                 }
-
-                hiddenZone.innerHTML = ""; 
+                zone.innerHTML = "";
+                if(!list.children.length) list.innerHTML = "<div style='padding:20px;'>콘텐츠가 부족합니다.</div>";
             } catch (err) {
-                console.error(err);
-                listContainer.innerHTML = "<div style='color:red; padding:20px;'>이미지 생성 중 오류가 발생했습니다.</div>";
+                list.innerHTML = "<div style='color:red; padding:20px;'>이미지 생성 실패</div>";
             }
         }
 
         async function shareCapturedFiles() {
-            if (globalGeneratedFiles.length === 0) return alert("생성된 이미지 파일이 존재하지 않습니다.");
-            
+            if (!globalGeneratedFiles.length) return alert("생성된 파일이 없습니다.");
             if (navigator.share && navigator.canShare({ files: globalGeneratedFiles })) {
-                try {
-                    await navigator.share({ files: globalGeneratedFiles, title: '기록 공유' });
-                } catch (err) {
-                    if(err.name !== 'AbortError') {
-                        alert("기기 공유 실패: 이미지를 길게 눌러 수동 저장해 주세요.");
-                    }
-                }
-            } else {
-                alert("이 브라우저는 자동 파일 공유 기능을 지원하지 않습니다. 띄워진 이미지를 꾹 눌러 저장해 주세요.");
-            }
+                try { await navigator.share({ files: globalGeneratedFiles, title: '기록 공유' }); } 
+                catch (err) { if(err.name !== 'AbortError') alert("공유 실패: 이미지를 길게 눌러 저장하세요."); }
+            } else { alert("이 브라우저는 자동 공유를 지원하지 않습니다. 이미지를 꾹 눌러 저장해 주세요."); }
         }
 
-        // [Supabase] 데이터 저장 처리 (업서트)
         async function saveCurrentBook() {
-            const titleInput = document.getElementById('book-title-input');
-            const title = titleInput.value.trim() || "제목 없음";
-            titleInput.value = title; 
-            
+            const title = $('book-title-input').value.trim() || "제목 없음";
+            $('book-title-input').value = title;
             const id = currentBookId || 'eb_' + Date.now();
+            if (isEditMode) rawContent = $('editor-surface').innerText;
             
-            if (isEditMode) {
-                rawContent = document.getElementById('editor-surface').innerText;
-            }
+            const { error } = await supabaseClient.from('acim_workbook').upsert({ id, title, content: rawContent, updated_at: new Date().toISOString() });
+            if (error) return alert("저장 실패: " + error.message);
             
-            // Supabase 테이블에 Upsert (동일 id가 있으면 수정, 없으면 추가)
-            const { error } = await supabaseClient
-                .from('acim_workbook')
-                .upsert({
-                    id,
-                    title,
-                    content: rawContent,
-                    updated_at: new Date().toISOString()
-                });
-
-            if (error) {
-                alert("Supabase 저장에 실패했습니다: " + error.message);
-                return;
-            }
-            
-            currentBookId = id; 
-            document.title = title + "워크북(기적수업)";
-            
-            setMode(false); 
-            showToast();
+            currentBookId = id; document.title = title + "워크북(기적수업)";
+            setMode(false); showToast();
         }
 
-        // [Supabase] 특정 단건 데이터 가져오기 호출부
         async function loadBook(id) {
-            const { data, error } = await supabaseClient
-                .from('acim_workbook')
-                .select('*')
-                .eq('id', id)
-                .single();
-
-            if (error) {
-                alert("데이터를 불러오지 못했습니다: " + error.message);
-                return;
-            }
-
-            if (data) {
-                loadBookData(data);
-            }
+            const { data, error } = await supabaseClient.from('acim_workbook').select('*').eq('id', id).single();
+            if (error) return alert("불러오기 실패: " + error.message);
+            if (data) loadBookData(data);
         }
 
-        // 순수 데이터 매핑용 분리 함수
         function loadBookData(book) {
-            currentBookId = book.id; 
-            rawContent = book.content || ""; 
-            
-            const title = book.title || "제목 없음";
-            document.getElementById('book-title-input').value = title;
-            document.title = title + "워크북(기적수업)"; 
-            
-            setMode(false); 
-            closeModals();
+            currentBookId = book.id; rawContent = book.content || ""; 
+            $('book-title-input').value = book.title || "제목 없음";
+            document.title = $('book-title-input').value + "워크북(기적수업)"; 
+            setMode(false); closeModals();
         }
 
-        // [Supabase] 내 서재 목록 갱신 및 오픈
         async function openLibrary() {
-            const listContainer = document.getElementById('book-list');
-            listContainer.innerHTML = '<div style="padding:15px; color:#999; text-align:center;">📚 클라우드 서재 불러오는 중...</div>';
-            
-            document.getElementById('library-modal').style.display = 'block'; 
-            document.getElementById('overlay').style.display = 'block';
+            const list = $('book-list');
+            list.innerHTML = '<div style="padding:15px; color:#999; text-align:center;">📚 서재 불러오는 중...</div>';
+            $('library-modal').style.display = $('overlay').style.display = 'block';
 
-            const { data, error } = await supabaseClient
-                .from('acim_workbook')
-                .select('id, title')
-                .order('updated_at', { ascending: false });
+            const { data, error } = await supabaseClient.from('acim_workbook').select('id, title');
+            if (error) return list.innerHTML = `<div style="padding:15px; color:red; text-align:center;">에러: ${error.message}</div>`;
+            if (!data || !data.length) return list.innerHTML = '<div style="padding:15px; color:#999; text-align:center;">서재가 비어 있습니다.</div>';
 
-            if (error) {
-                listContainer.innerHTML = `<div style="padding:15px; color:red; text-align:center;">에러: ${error.message}</div>`;
-                return;
-            }
-
-            if(!data || data.length === 0) {
-                listContainer.innerHTML = '<div style="padding:15px; color:#999; text-align:center;">서재가 비어 있습니다.</div>';
-            } else {
-                listContainer.innerHTML = data.map(b => `
-                    <div class="book-item" onclick="loadBook('${b.id}')">
-                        <span class="book-item-title">📘 ${b.title}</span>
-                        <button class="delete-btn" onclick="deleteBook('${b.id}', event)">❌</button>
-                    </div>
-                `).join('');
-            }
+            data.sort((a, b) => (a.title || "제목 없음").localeCompare(b.title || "제목 없음", undefined, { numeric: true, sensitivity: 'base' }));
+            list.innerHTML = data.map(b => `<div class="book-item" onclick="loadBook('${b.id}')"><span class="book-item-title">📘 ${b.title}</span><button class="delete-btn" onclick="deleteBook('${b.id}', event)">❌</button></div>`).join('');
         }
 
-        // [Supabase] 특정 글 삭제 처리
         async function deleteBook(id, event) {
-            event.stopPropagation(); 
-            if (!confirm("이 책을 클라우드 서재에서 정말 삭제하시겠습니까?")) return;
-
-            const { error } = await supabaseClient
-                .from('acim_workbook')
-                .delete()
-                .eq('id', id);
-
-            if (error) {
-                alert("삭제에 실패했습니다: " + error.message);
-                return;
-            }
+            event.stopPropagation();
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+            const { error } = await supabaseClient.from('acim_workbook').delete().eq('id', id);
+            if (error) return alert("삭제 실패: " + error.message);
 
             if (currentBookId === id) {
-                // 삭제 후 남은 글 중 최신 글을 가져오거나 새 글 작성화면 표시
                 const { data } = await supabaseClient.from('acim_workbook').select('id').order('updated_at', { ascending: false }).limit(1);
-                if (data && data.length > 0) {
-                    loadBook(data[0].id);
-                } else {
-                    createNewBook();
-                }
-            } else {
-                openLibrary(); 
-            }
+                data && data.length > 0 ? loadBook(data[0].id) : createNewBook();
+            } else { openLibrary(); }
         }
 
         function createNewBook() { 
-            currentBookId = null; 
-            rawContent = ""; 
-            document.getElementById('book-title-input').value = ""; 
-            document.getElementById('editor-surface').innerText = ""; 
-            document.title = "새 글 작성 - 워크북(기적수업)"; 
-            setMode(true); 
-            closeModals(); 
+            currentBookId = null; rawContent = ""; 
+            $('book-title-input').value = ""; $('editor-surface').innerText = ""; 
+            document.title = "새 글 작성 - 워크북(기적수업)"; setMode(true); closeModals(); 
         }
-        
         function adjustFont(v) { 
-            fontSize += (v*2); 
-            document.getElementById('editor-surface').style.fontSize = fontSize + 'px'; 
+            fontSize += (v*2); $('editor-surface').style.fontSize = fontSize + 'px'; 
             localStorage.setItem('eb_font_size', fontSize);
         }
         function closeModals() { document.querySelectorAll('.modal, .modal-overlay').forEach(el => el.style.display = 'none'); }
-        function showToast() { const t = document.getElementById('save-toast'); t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
+        function showToast() { const t = $('save-toast'); t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 1500); }
         
         init();
     </script>
