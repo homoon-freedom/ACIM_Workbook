@@ -263,7 +263,7 @@
         async function shareCapturedFiles() {
             if (!globalGeneratedFiles.length) return alert("생성된 파일이 없습니다.");
             if (navigator.share && navigator.canShare({ files: globalGeneratedFiles })) {
-                try { await navigator.share({ files: globalGeneratedFiles, title: '기록 공유' }); } 
+                try { await navigator.share({ files: globalGeneratedFiles }); } 
                 catch (err) { if(err.name !== 'AbortError') alert("공유 실패: 이미지를 길게 눌러 저장하세요."); }
             } else { alert("이 브라우저는 자동 공유를 지원하지 않습니다. 이미지를 꾹 눌러 저장해 주세요."); }
         }
