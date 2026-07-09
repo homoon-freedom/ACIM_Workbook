@@ -90,11 +90,14 @@
         <button class="nav-btn" onclick="openLibrary()">서재</button>
         <button class="nav-btn" onclick="createNewBook()">새글</button>
         <button class="nav-btn" onclick="saveCurrentBook()">저장</button>
+        <button class="nav-btn" onclick="triggerImageUpload()">사진</button>
         <button class="nav-btn" onclick="generateShareImages()">전송</button>
         <button class="nav-btn" onclick="adjustFont(1)">확대</button>
         <button class="nav-btn" onclick="adjustFont(-1)">축소</button>
     </div>
 
+    <input type="file" id="image-upload" accept="image/*" style="display:none;">
+    
     <div id="hidden-capture-zone"></div>
     <div class="modal-overlay" id="overlay" onclick="closeModals()"></div>
     
@@ -135,15 +138,30 @@
         function parseMarkdown(text) {
             if (!text) return "";
             return text.split('\n').map(line => {
-                let p = line.replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>')
-                            .replace(/\((.*?)\)/g, '<span class="bracket-highlight">($1)</span>')
-                            .replace(/“(.*?)”/g, '“<span class="quote-highlight">$1</span>”');
+                // 1. 이미지 마크다운 먼저 파싱하여 보호
+                let images = [];
+                let p = line.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, url) => {
+                    images.push(`<img src="${url}" alt="${alt}" style="max-width:100%; border-radius:8px; display:block; margin: 15px auto;">`);
+                    return `__IMG_${images.length - 1}__`;
+                });
+
+                // 2. 텍스트 스타일링 적용
+                p = p.replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>')
+                   .replace(/\((.*?)\)/g, '<span class="bracket-highlight">($1)</span>')
+                   .replace(/“(.*?)”/g, '“<span class="quote-highlight">$1</span>”');
+                
+                // 3. 이미지 다시 복구
+                images.forEach((img, i) => {
+                    p = p.replace(`__IMG_${i}__`, img);
+                });
+
                 const t = p.trim();
                 if (t.startsWith('###')) return `<span class="header-big">${p.replace(/^###\s*/, '')}</span>`;
                 if (t.startsWith('##')) return `<span class="header-mid">${p.replace(/^##\s*/, '')}</span>`;
                 if (t.startsWith('#')) return `<span class="header-small">${p.replace(/^#\s*/, '')}</span>`;
                 if (t.startsWith('*')) return `<span class="bullet-line">• ${p.replace(/^\s*\*\s*/, '')}</span>`;
                 if (t.startsWith('>')) return `<span class="quote-line">${p.replace(/^>\s*/, '')}</span>`;
+                
                 return t === "" ? "<div><br></div>" : `<div>${p}</div>`;
             }).join('');
         }
@@ -166,6 +184,39 @@
             $('edit-mode-btn').style.cssText = isEditMode ? "background:#f1c40f; color:#2c3e50; font-weight:bold;" : "background:transparent; color:#718096;";
             $('read-mode-btn').style.cssText = !isEditMode ? "background:var(--accent-color); color:#fff; font-weight:bold;" : "background:transparent; color:#718096;";
         }
+
+        // --- 이미지 업로드 추가 영역 ---
+        function triggerImageUpload() {
+            if (!isEditMode) return alert("편집 모드(✎)에서만 사진을 추가할 수 있습니다.");
+            $('image-upload').click();
+        }
+
+        $('image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 1.5 * 1024 * 1024) {
+                alert("용량이 너무 큽니다. 1.5MB 이하의 이미지만 업로드 가능합니다.");
+                e.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64Url = event.target.result;
+                const imageMarkdown = `\n![이미지](${base64Url})\n`;
+                
+                const surface = $('editor-surface');
+                surface.innerText += imageMarkdown;
+                rawContent = surface.innerText;
+                
+                renderContent(); 
+                window.scrollTo(0, document.body.scrollHeight);
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        });
+        // ------------------------------
 
         async function generateShareImages() {
             if (isEditMode) rawContent = $('editor-surface').innerText;
