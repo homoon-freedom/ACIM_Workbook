@@ -146,11 +146,11 @@
                     return `__IMG_${images.length - 1}__`;
                 });
 
-                // 2. 텍스트 스타일링 적용 (@ 기호 파싱 추가)
+                // 2. 텍스트 스타일링 적용 (@와 @ 사이의 모든 글자를 초록색으로)
                 p = p.replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>')
                    .replace(/\((.*?)\)/g, '<span class="bracket-highlight">($1)</span>')
                    .replace(/“(.*?)”/g, '“<span class="quote-highlight">$1</span>”')
-                   .replace(/@([^\s]+)/g, '<span class="at-highlight">@$1</span>'); // <-- 이 부분이 추가되었습니다.
+                   .replace(/@(.*?)@/g, '<span class="at-highlight">$1</span>'); // <-- 이 부분의 정규식이 변경되었습니다.
                 
                 // 3. 이미지 다시 복구
                 images.forEach((img, i) => {
@@ -163,9 +163,6 @@
                 if (t.startsWith('#')) return `<span class="header-small">${p.replace(/^#\s*/, '')}</span>`;
                 if (t.startsWith('*')) return `<span class="bullet-line">• ${p.replace(/^\s*\*\s*/, '')}</span>`;
                 if (t.startsWith('>')) return `<span class="quote-line">${p.replace(/^>\s*/, '')}</span>`;
-                
-                // 만약 @로 시작하는 '줄 전체'를 초록색으로 만들고 싶다면 아래 주석을 해제하세요.
-                // if (t.startsWith('@')) return `<div class="at-highlight">${p}</div>`;
                 
                 return t === "" ? "<div><br></div>" : `<div>${p}</div>`;
             }).join('');
